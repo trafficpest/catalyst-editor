@@ -8,7 +8,7 @@ CFLAGS = -Wall -Wextra -std=c99
 LIBS = -lncurses -lasound
 
 # Executable Name
-TARGET = ./build/bin/catalysteditor
+TARGET = ./build/bin/catalyst-editor
 
 # Source Files
 SRCS = ./src/ui.c ./src/midi.c ./src/main.c
