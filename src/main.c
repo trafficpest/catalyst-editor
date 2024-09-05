@@ -1,13 +1,17 @@
+// main.c
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include "ui.h"
+#include "midi.h"
 
 int main() {
+
     initscr();
     cbreak();
     noecho();
     keypad(stdscr, TRUE);
+    open_midi_sequencer();
 
     // Define settings
 Setting settings[] = {
@@ -88,6 +92,7 @@ Setting settings[] = {
     }
 
     endwin();
+    close_midi_sequencer();
     return 0;
 }
 

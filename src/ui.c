@@ -1,5 +1,6 @@
-#include <ncurses.h>
+// ui.c
 #include <alsa/asoundlib.h>
+#include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
 #include "midi.h"
@@ -31,10 +32,6 @@ void show_slider_popup(Setting *setting) {
 
     int ch;
     int pos = (setting->value - setting->min) * SLIDER_WIDTH / (setting->max - setting->min);  // Scale setting to slider position
-
-    // Assuming channel and type for MIDI events are available in Setting or can be set here
-    int midi_channel = 0;  // Default MIDI channel (you might want to set this dynamically)
-    int midi_type = SND_SEQ_EVENT_CONTROLLER;  // Change type if needed
 
     while (1) {
         // Display the slider
@@ -85,8 +82,7 @@ void show_slider_popup(Setting *setting) {
         pos = (setting->value - setting->min) * SLIDER_WIDTH / (setting->max - setting->min);  // Update slider position
         
         if (setting->value != old_value) {
-            // Send MIDI event here
-            send_midi_event(midi_type, midi_channel, setting->control_number, setting->value);
+            send_midi_event(SND_SEQ_EVENT_CONTROLLER, setting->control_number, setting->value);
         }
     }
 }
