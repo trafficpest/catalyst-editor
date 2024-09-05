@@ -19,8 +19,11 @@ typedef struct {
     int max;
 } Setting;
 
+
+void initialize_ui();
+void display_main_menu(Setting *settings, int num_settings, int selected_index);
+void display_setting(WINDOW *win, Setting *setting);
 void show_slider_popup(Setting *setting);
-void display_setting(WINDOW *win, Setting *setting, int index, int col);
 
 #endif // UI_H
 
