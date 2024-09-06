@@ -16,19 +16,19 @@ Setting settings[] = {
     {"Amp Voicing Type   ", 5, 0, 0, 11},  // MIDI CC 5
     {"A/B Select         ", 30, 63, 63, 64},  // MIDI CC 30, 0-63=A, 64-127=B
     {"Boost Off/On       ", 25, 63, 63, 64},  // MIDI CC 25, 0-63=Off, 64-127=On
-    {"Boost Level        ", 26, 0, 0, 127},  // MIDI CC 26
-    {"Gain               ", 13, 0, 0, 127},  // MIDI CC 13
-    {"Bass               ", 14, 0, 0, 127},  // MIDI CC 14
-    {"Mid                ", 15, 0, 0, 127},  // MIDI CC 15
-    {"Treble             ", 16, 0, 0, 127},  // MIDI CC 16
-    {"Presence           ", 21, 0, 0, 127},  // MIDI CC 21
-    {"Channel Volume     ", 17, 0, 0, 127},  // MIDI CC 17
+    {"Boost Level        ", 26, 63, 0, 127},  // MIDI CC 26
+    {"Gain               ", 13, 63, 0, 127},  // MIDI CC 13
+    {"Bass               ", 14, 63, 0, 127},  // MIDI CC 14
+    {"Mid                ", 15, 63, 0, 127},  // MIDI CC 15
+    {"Treble             ", 16, 63, 0, 127},  // MIDI CC 16
+    {"Presence           ", 21, 63, 0, 127},  // MIDI CC 21
+    {"Channel Volume     ", 17, 63, 0, 127},  // MIDI CC 17
     {"Gate Off/On        ", 22, 63, 63, 64},  // MIDI CC 22, 0-63=Off, 64-127=On
-    {"Gate Threshold     ", 23, 0, 0, 127},  // MIDI CC 23, with special dB range handling
-    {"Gate Decay         ", 24, 0, 0, 127},  // MIDI CC 24, 0=0.1ms, 127=3000ms
+    {"Gate Threshold     ", 23, 63, 0, 127},  // MIDI CC 23, with special dB range handling
+    {"Gate Decay         ", 24, 63, 0, 127},  // MIDI CC 24, 0=0.1ms, 127=3000ms
     {"Expression         ", 4, 0, 0, 127},  // MIDI CC 4
     {"Volume Pedal Off/On", 6, 64, 63, 64},  // MIDI CC 6, 0-63=Off, 64-127=On
-    {"Volume Pedal Level ", 7, 0, 0, 127},  // MIDI CC 7
+    {"Volume Pedal Level ", 7, 127, 0, 127},  // MIDI CC 7
     {"Effect 1 Off/On    ", 28, 63, 63, 64},  // MIDI CC 28, 0-63=Off, 64-127=On
     {"FX 1 Model Select  ", 19, 0, 0, 23},  // MIDI CC 19
     {"FX 1 Amount        ", 34, 0, 0, 127},  // MIDI CC 34
@@ -64,6 +64,10 @@ while (1) {
                 break;
             case '\n':  // Enter key
                 show_slider_popup(&settings[selected_index]);
+                break;
+            case 'm':
+                show_midi_clients();
+                clear();
                 break;
             case 'q':
                 endwin();

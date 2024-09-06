@@ -15,13 +15,13 @@ void initialize_ui() {
     keypad(stdscr, TRUE);
 
     // Define color pairs
-    init_pair(1, COLOR_WHITE, COLOR_RED);
-    init_pair(2, COLOR_WHITE, COLOR_BLACK);
-    init_pair(3, COLOR_BLACK, COLOR_WHITE);
+    init_pair(1, COLOR_BLACK, COLOR_WHITE); //pop slider
+    init_pair(2, COLOR_WHITE, COLOR_BLACK); //setting display
+    init_pair(3, COLOR_BLACK, COLOR_WHITE); //main settings
     init_pair(4, COLOR_WHITE, -1);
-    init_pair(5, COLOR_CYAN, COLOR_BLUE);
+    init_pair(5, COLOR_CYAN, COLOR_BLUE); // background
 
-    bkgd(COLOR_PAIR(5));
+    bkgd(COLOR_PAIR(5) | A_BOLD);
 }
 
 #define MENU_WIDTH 70
@@ -31,18 +31,17 @@ void display_main_menu(Setting *settings, int num_settings, int selected_index) 
     int rows, cols;
     getmaxyx(stdscr, rows, cols);  // Get the screen size
 
+    refresh();  // Refresh the main screen
+                
+    // Display the title and instructions
+    mvprintw(1, (cols - strlen("Line6 Catalyst Editor:")) / 2, "Line6 Catalyst Editor:");
+    mvprintw(rows - 2, (cols - strlen("Arrow Keys - navigate, Enter - adjust, m - MIDI, q - quit.")) / 2, "Arrow Keys - navigate, Enter - adjust, m - MIDI, q - quit.");
+
     // Create a new window for the settings box
     WINDOW *settings_win = newwin(MENU_HEIGHT, MENU_WIDTH, (rows - MENU_HEIGHT) / 2, (cols - MENU_WIDTH) / 2);
     wbkgd(settings_win, COLOR_PAIR(3));  
     box(settings_win, 0, 0);  // Draw a box around the window
                             
-
-    // Display the title and instructions
-    //attron(COLOR_PAIR(5));
-    mvprintw(1, (cols - strlen("Line6 Catalyst Editor:")) / 2, "Line6 Catalyst Editor:");
-    mvprintw(rows - 2, (cols - strlen("Use Arrow Keys to navigate, Enter to adjust, q to quit.")) / 2, "Use Arrow Keys to navigate, Enter to adjust, q to quit.");
-    //attroff(COLOR_PAIR(5));
-
     // Display the settings in the centered window
     for (int i = 0; i < num_settings; ++i) {
         int col = i % 2;
@@ -63,37 +62,9 @@ void display_main_menu(Setting *settings, int num_settings, int selected_index) 
             wattroff(settings_win, A_REVERSE);
         }
     }
-
     wrefresh(settings_win);  // Refresh the settings window
-    refresh();  // Refresh the main screen
-    delwin(settings_win);  // Delete the settings window
 }
-/*
-void display_main_menu(Setting *settings, int num_settings, int selected_index) {
-    clear();
-    mvprintw(2, 33, "Line6 Catalyst Editor:");
-    for (int i = 0; i < num_settings; ++i) {
-        int col = i % 2;
-        int row = 4 + (i / 2);
 
-        char label[MAX_LABEL_LENGTH + 1];
-        strncpy(label, settings[i].name, MAX_LABEL_LENGTH);
-        label[MAX_LABEL_LENGTH] = '\0';
-
-        if (i == selected_index)
-            attron(A_REVERSE);
-
-        mvprintw(row, 2 + col * COL_WIDTH, "%-10s", label);
-        display_setting(stdscr, &settings[i], i, col);
-
-        if (i == selected_index)
-            attroff(A_REVERSE);
-    }
-
-    mvprintw(LINES - 2, 2, "Use Arrow Keys to navigate, Enter to adjust, q to quit.");
-    refresh();
-}
-*/
 void display_setting(WINDOW *win, Setting *setting) {
     int bar_length = (setting->value - setting->min) * DISPLAY_BAR_WIDTH / (setting->max - setting->min);  // Scale setting to bar length
 
@@ -179,5 +150,88 @@ void show_slider_popup(Setting *setting) {
             send_midi_event(SND_SEQ_EVENT_CONTROLLER, setting->control_number, setting->value);
         }
     }
+}
+
+void show_midi_clients() {
+    int client_count;
+    MidiClient *clients = get_midi_clients(&client_count);
+
+    if (clients == NULL) {
+        return; // Handle memory allocation failure
+    }
+
+    // Create select_midi window
+    int select_midi_height = 20;
+    int select_midi_width = 60;
+    int starty = (LINES - select_midi_height) / 2;
+    int startx = (COLS - select_midi_width) / 2;
+
+    WINDOW *select_midi_win = newwin(select_midi_height, select_midi_width, starty, startx);
+    wbkgd(select_midi_win, COLOR_PAIR(1));
+    box(select_midi_win, 0, 0);
+    keypad(select_midi_win, TRUE);
+
+    int ch;
+    int line = 1;
+    int selected_client = -1;
+    int selected_port = -1;
+
+    mvwprintw(select_midi_win, 0, 2, "Available MIDI Clients and Ports:");
+    wrefresh(select_midi_win);
+
+    // Display available MIDI clients and ports
+    for (int i = 0; i < client_count; i++) {
+        if (line < select_midi_height - 2) {
+            mvwprintw(select_midi_win, line, 2, "%3d: %s - %s", i + 1, clients[i].client_name, clients[i].port_name);
+            line++;
+        } else {
+            mvwprintw(select_midi_win, line, 2, "Press Enter to scroll or 'q' to exit.");
+            wrefresh(select_midi_win);
+            ch = wgetch(select_midi_win);
+
+            if (ch == 'q') {
+                break;
+            } else {
+                werase(select_midi_win);
+                box(select_midi_win, 0, 0);
+                mvwprintw(select_midi_win, 0, 2, "Available MIDI Clients and Ports:");
+                line = 1;
+            }
+        }
+    }
+
+    mvwprintw(select_midi_win, line, 2, "Select client number and press Enter:");
+    wrefresh(select_midi_win);
+
+    while (1) {
+        ch = wgetch(select_midi_win);
+
+        if (ch == 'q') {
+            break;
+        } else if (ch >= '1' && ch <= '0' + client_count) {
+            selected_client = ch - '1'; // Convert to zero-based index
+            break;
+        }
+    }
+
+    if (selected_client >= 0 && selected_client < client_count) {
+        // Assuming the port is 0 for simplicity; you might want to add logic for selecting ports
+        selected_port = 0;
+
+        // Subscribe to the selected client
+        int output_client = clients[selected_client].client;
+        int output_port = selected_port;
+        int input_client = get_app_client_id(); 
+        int input_port = 0; // Replace with your port ID
+
+        subscribe_to_midi_port(input_client, input_port, output_client, output_port);
+
+        mvwprintw(select_midi_win, line + 1, 2, "Subscribed to client %d.", selected_client + 1);
+        wrefresh(select_midi_win);
+        wgetch(select_midi_win); // Wait for user input to close the window
+    }
+
+    delwin(select_midi_win);
+    free(clients);  // Free the allocated memory
 }
 

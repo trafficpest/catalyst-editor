@@ -2,7 +2,7 @@
 #ifndef UI_H
 #define UI_H
 
-#include <ncurses.h>
+#include "setting.h"
 
 #define SLIDER_WIDTH 50
 #define COL_WIDTH 40
@@ -11,19 +11,12 @@
 #define SMALL_INCREMENT 1
 #define MAX_LABEL_LENGTH 25
 
-typedef struct {
-    char name[30];
-    int control_number;
-    int value;
-    int min;
-    int max;
-} Setting;
-
-
 void initialize_ui();
-void display_main_menu(Setting *settings, int num_settings, int selected_index);
+void display_main_menu(Setting *setting, int num_settings, int selected_index);
 void display_setting(WINDOW *win, Setting *setting);
 void show_slider_popup(Setting *setting);
+void show_midi_clients();
+
 
 #endif // UI_H
 
